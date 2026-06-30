@@ -145,7 +145,7 @@ function getQueryValue(query, key) {
 }
 
 function extractSteamIdFromClaimedId(claimedId) {
-  const match = String(claimedId || '').match(/^https?:\/\/steamcommunity\.com\/openid\/id\/(\d+)$/);
+  const match = String(claimedId || '').match(/^https?:\/\/steamcommunity\.com\/openid\/id\/(\d+)$/i);
   return match ? match[1] : null;
 }
 
@@ -162,6 +162,10 @@ function sanitizeOptionalString(value, maxLength = 200) {
 
 function normalizePlatform(value) {
   return String(value || '').trim().toLowerCase();
+}
+
+function logSteamBindingFailure(reason, extra = {}) {
+  console.warn('Steam binding failed:', { reason, ...extra });
 }
 
 async function verifySteamOpenId(query) {
@@ -182,11 +186,20 @@ async function verifySteamOpenId(query) {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: params,
+    body: params.toString(),
   });
 
   const text = await response.text();
-  return response.ok && /(^|\n)is_valid\s*:\s*true(\r?\n|$)/.test(text);
+  const isValid = response.ok && /(^|\r?\n)is_valid\s*:\s*true\b/i.test(text);
+
+  if (!isValid) {
+    logSteamBindingFailure('steam_check_authentication_rejected', {
+      status: response.status,
+      responsePreview: text.slice(0, 200),
+    });
+  }
+
+  return isValid;
 }
 
 async function deleteExpiredSessions() {
@@ -580,31 +593,36 @@ app.get('/api/auth/steam/callback', async (req, res) => {
   const errorRedirect = (status = 'error') => res.redirect(buildClientProfileRedirect(req, 'steam', status));
 
   if (!state) {
-    return errorRedirect();
+    logSteamBindingFailure('missing_state');
+    return errorRedirect('missing_state');
   }
 
   try {
     const savedState = await consumePlatformAuthState('steam', state);
 
     if (!savedState?.userId) {
-      return errorRedirect();
+      logSteamBindingFailure('expired_or_unknown_state', { statePrefix: state.slice(0, 8) });
+      return errorRedirect('expired_state');
     }
 
     if (getQueryValue(req.query, 'openid.mode') !== 'id_res') {
-      return errorRedirect();
+      logSteamBindingFailure('openid_mode_not_id_res', { mode: getQueryValue(req.query, 'openid.mode') });
+      return errorRedirect('denied');
     }
 
     const isValid = await verifySteamOpenId(req.query);
     if (!isValid) {
-      return errorRedirect();
+      return errorRedirect('verify_failed');
     }
 
     const claimedId = getQueryValue(req.query, 'openid.claimed_id');
     const identity = getQueryValue(req.query, 'openid.identity');
     const steamId = extractSteamIdFromClaimedId(claimedId);
+    const identitySteamId = extractSteamIdFromClaimedId(identity);
 
-    if (!steamId || identity !== claimedId) {
-      return errorRedirect();
+    if (!steamId || (identitySteamId && identitySteamId !== steamId)) {
+      logSteamBindingFailure('invalid_steam_claim', { claimedId, identity });
+      return errorRedirect('invalid_claim');
     }
 
     const profileUrl = `https://steamcommunity.com/profiles/${steamId}`;
