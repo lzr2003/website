@@ -4,6 +4,7 @@ export interface UserPlatform {
   platform: string;
   accountName: string;
   profileUrl?: string;
+  updatedAt?: string;
 }
 
 export interface User {
@@ -11,6 +12,10 @@ export interface User {
   email: string;
   name?: string;
   avatar?: string;
+  bio?: string;
+  location?: string;
+  website?: string;
+  createdAt?: string;
   platforms?: UserPlatform[];
 }
 
