@@ -29,8 +29,8 @@ const socialLinks = [
 ];
 
 const languageOptions = [
-  { code: "zh", label: "中文", detail: "简体中文" },
-  { code: "en", label: "English", detail: "English" },
+  { code: "zh", label: "中文" },
+  { code: "en", label: "English" },
 ] as const;
 
 const homeCopy = {
@@ -54,9 +54,6 @@ const homeCopy = {
     logout: "Log out",
     languageAria: "Select language",
     languageLabel: "Language",
-    whoTitle: "Who We Are",
-    whoCopy:
-      "RIVERSOFT is a game development studio focused on original games, immersive digital worlds, and meaningful player experiences.",
     whatTitle: "What We Do",
     whatCopy:
       "We build gameplay systems, world settings, visual direction, and interactive experiences from concept to release.",
@@ -87,9 +84,6 @@ const homeCopy = {
     logout: "退出登录",
     languageAria: "选择语言",
     languageLabel: "语言",
-    whoTitle: "我们是谁",
-    whoCopy:
-      "RIVERSOFT 是一家游戏开发工作室，专注于原创游戏、沉浸式数字世界和有意义的玩家体验。",
     whatTitle: "我们做什么",
     whatCopy:
       "我们从概念到发布，构建玩法系统、世界设定、视觉方向和互动体验。",
@@ -316,7 +310,7 @@ export function HomePage() {
               </button>
 
               {isLanguageOpen ? (
-                <div className="liquid-glass absolute right-0 top-14 z-30 w-44 rounded-3xl p-2 text-white/80 shadow-2xl">
+                <div className="liquid-glass absolute right-0 top-14 z-30 w-40 rounded-3xl p-2 text-white/80 shadow-2xl">
                   <p className="px-3 pb-2 pt-1 font-body text-[0.65rem] uppercase tracking-[0.26em] text-white/45">
                     {t.languageLabel}
                   </p>
@@ -337,13 +331,8 @@ export function HomePage() {
                               : "text-white/60 hover:bg-white/10 hover:text-white"
                           }`}
                         >
-                          <span>
-                            <span className="block font-display text-sm font-medium tracking-[-0.02em]">
-                              {languageOption.label}
-                            </span>
-                            <span className="mt-0.5 block font-body text-[0.65rem] text-white/45">
-                              {languageOption.detail}
-                            </span>
+                          <span className="block font-display text-sm font-medium tracking-[-0.02em]">
+                            {languageOption.label}
                           </span>
                           {isSelected ? <Check size={14} strokeWidth={1.8} /> : null}
                         </button>
@@ -354,15 +343,6 @@ export function HomePage() {
               ) : null}
             </div>
           </div>
-
-          <article className="liquid-glass mt-24 w-56 rounded-3xl p-5 text-white/80">
-            <h2 className="font-display text-lg font-medium tracking-[-0.04em] text-white">
-              {t.whoTitle}
-            </h2>
-            <p className="mt-3 text-xs leading-5 text-white/60">
-              {t.whoCopy}
-            </p>
-          </article>
 
           <div className="relative z-10 mt-auto w-full">
             <section className="liquid-glass glass-shell">
