@@ -1,14 +1,15 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
   ArrowRight,
   BookOpen,
+  Check,
   Download,
+  Globe2,
   Instagram,
   Linkedin,
   Menu,
-  Sparkles,
   Twitter,
   Wand2,
   type LucideIcon,
@@ -24,6 +25,11 @@ const socialLinks = [
   { label: "Twitter", icon: Twitter },
   { label: "LinkedIn", icon: Linkedin },
   { label: "Instagram", icon: Instagram },
+];
+
+const languageOptions = [
+  { code: "zh", label: "中文", detail: "简体中文" },
+  { code: "en", label: "English", detail: "English" },
 ];
 
 function LogoMark({ size = 32 }: { size?: number }) {
@@ -76,6 +82,8 @@ function FeatureCard({
 
 export function HomePage() {
   const { user, logout } = useAuth();
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black font-body text-white">
@@ -202,12 +210,54 @@ export function HomePage() {
                 Login
               </Link>
             )}
-            <button
-              className="liquid-glass flex h-11 w-11 items-center justify-center rounded-full text-white transition-transform hover:scale-105 active:scale-95"
-              aria-label="Studio highlight"
-            >
-              <Sparkles size={17} strokeWidth={1.7} />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setIsLanguageOpen((isOpen) => !isOpen)}
+                className="liquid-glass flex h-11 w-11 items-center justify-center rounded-full text-white transition-transform hover:scale-105 active:scale-95"
+                aria-label="Select language"
+                aria-expanded={isLanguageOpen}
+              >
+                <Globe2 size={17} strokeWidth={1.7} />
+              </button>
+
+              {isLanguageOpen ? (
+                <div className="liquid-glass absolute right-0 top-14 z-30 w-44 rounded-3xl p-2 text-white/80 shadow-2xl">
+                  <p className="px-3 pb-2 pt-1 font-body text-[0.65rem] uppercase tracking-[0.26em] text-white/45">
+                    Language
+                  </p>
+                  <div className="space-y-1">
+                    {languageOptions.map((language) => {
+                      const isSelected = selectedLanguage === language.code;
+
+                      return (
+                        <button
+                          key={language.code}
+                          onClick={() => {
+                            setSelectedLanguage(language.code);
+                            setIsLanguageOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left transition-colors ${
+                            isSelected
+                              ? "bg-white/15 text-white"
+                              : "text-white/60 hover:bg-white/10 hover:text-white"
+                          }`}
+                        >
+                          <span>
+                            <span className="block font-display text-sm font-medium tracking-[-0.02em]">
+                              {language.label}
+                            </span>
+                            <span className="mt-0.5 block font-body text-[0.65rem] text-white/45">
+                              {language.detail}
+                            </span>
+                          </span>
+                          {isSelected ? <Check size={14} strokeWidth={1.8} /> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <article className="liquid-glass mt-24 w-56 rounded-3xl p-5 text-white/80">
