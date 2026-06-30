@@ -8,8 +8,8 @@ const backgroundVideo =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260315_073750_51473149-4350-4920-ae24-c8214286f323.mp4";
 
 const languageOptions = [
-  { code: "zh", label: "中文", detail: "简体中文" },
-  { code: "en", label: "English", detail: "English" },
+  { code: "zh", label: "中文" },
+  { code: "en", label: "English" },
 ] as const;
 
 const authCopy = {
@@ -140,7 +140,7 @@ export function AuthPage() {
             </button>
 
             {isLanguageOpen ? (
-              <div className="liquid-glass absolute right-0 top-12 z-30 w-44 rounded-3xl p-2 text-white/80 shadow-2xl">
+              <div className="liquid-glass absolute right-0 top-12 z-30 w-40 rounded-3xl p-2 text-white/80 shadow-2xl">
                 <p className="px-3 pb-2 pt-1 font-body text-[0.65rem] uppercase tracking-[0.26em] text-white/45">
                   {t.languageLabel}
                 </p>
@@ -162,13 +162,8 @@ export function AuthPage() {
                             : "text-white/60 hover:bg-white/10 hover:text-white"
                         }`}
                       >
-                        <span>
-                          <span className="block font-display text-sm font-medium tracking-[-0.02em]">
-                            {languageOption.label}
-                          </span>
-                          <span className="mt-0.5 block font-body text-[0.65rem] text-white/45">
-                            {languageOption.detail}
-                          </span>
+                        <span className="block font-display text-sm font-medium tracking-[-0.02em]">
+                          {languageOption.label}
                         </span>
                         {isSelected ? <Check size={14} strokeWidth={1.8} /> : null}
                       </button>
