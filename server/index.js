@@ -13,6 +13,7 @@ const dbPath = process.env.DATABASE_PATH || join(__dirname, 'database.sqlite');
 const app = express();
 app.set('trust proxy', 1);
 
+const SERVER_BUILD_ID = 'steam-binding-repeat-safe-2026-06-30';
 const PORT = process.env.PORT || 3001;
 const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'riversoft_sid';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
@@ -322,6 +323,17 @@ async function getUserProfile(userId) {
   return { ...user, platforms };
 }
 
+async function findSteamPlatformAccount(steamId, preferredUserId) {
+  return db.get(
+    `SELECT id, user_id AS userId, platform_user_id AS platformUserId, account_name AS accountName
+     FROM platform_accounts
+     WHERE platform = 'steam' AND (platform_user_id = ? OR account_name = ?)
+     ORDER BY CASE WHEN user_id = ? THEN 0 ELSE 1 END, id ASC
+     LIMIT 1`,
+    [steamId, steamId, preferredUserId]
+  );
+}
+
 async function upsertVerifiedPlatformAccount(userId, platform, account) {
   const updateResult = await db.run(
     `UPDATE platform_accounts
@@ -445,6 +457,10 @@ const authenticateSession = async (req, res, next) => {
     res.status(500).json({ message: 'Server error verifying session' });
   }
 };
+
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, build: SERVER_BUILD_ID, time: new Date().toISOString() });
+});
 
 app.post('/api/register', async (req, res) => {
   const { email, password } = req.body;
@@ -614,7 +630,7 @@ app.get('/api/auth/steam', authenticateSession, async (req, res) => {
 
 app.get('/api/auth/steam/callback', async (req, res) => {
   const state = sanitizeOptionalString(getQueryValue(req.query, 'state'), 128);
-  const errorRedirect = (status = 'error') => res.redirect(buildClientProfileRedirect(req, 'steam', status));
+  const errorRedirect = (status = 'unexpected_callback_error') => res.redirect(buildClientProfileRedirect(req, 'steam', status));
 
   if (!state) {
     logSteamBindingFailure('missing_state');
@@ -652,6 +668,27 @@ app.get('/api/auth/steam/callback', async (req, res) => {
     const profileUrl = `https://steamcommunity.com/profiles/${steamId}`;
 
     try {
+      const existingSteamAccount = await findSteamPlatformAccount(steamId, savedState.userId);
+
+      if (existingSteamAccount?.userId && existingSteamAccount.userId !== savedState.userId) {
+        logSteamBindingFailure('steam_account_already_linked_elsewhere', {
+          steamId,
+          existingUserId: existingSteamAccount.userId,
+          currentUserId: savedState.userId,
+        });
+        return errorRedirect('conflict');
+      }
+
+      if (existingSteamAccount?.userId === savedState.userId) {
+        await db.run(
+          `UPDATE platform_accounts
+           SET platform_user_id = ?, account_name = ?, profile_url = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE id = ?`,
+          [steamId, steamId, profileUrl, existingSteamAccount.id]
+        );
+        return res.redirect(buildClientProfileRedirect(req, 'steam', 'linked'));
+      }
+
       await upsertVerifiedPlatformAccount(savedState.userId, 'steam', {
         platformUserId: steamId,
         accountName: steamId,
@@ -668,8 +705,12 @@ app.get('/api/auth/steam/callback', async (req, res) => {
 
     res.redirect(buildClientProfileRedirect(req, 'steam', 'linked'));
   } catch (error) {
-    console.error(error);
-    errorRedirect(isSqliteUniqueConstraintError(error) ? 'conflict' : 'error');
+    console.error('Steam binding callback failed:', {
+      code: error?.code,
+      message: error?.message,
+      stack: error?.stack,
+    });
+    errorRedirect(isSqliteUniqueConstraintError(error) ? 'conflict' : 'unexpected_callback_error');
   }
 });
 
