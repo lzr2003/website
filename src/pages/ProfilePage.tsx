@@ -26,17 +26,83 @@ const backgroundVideo =
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 const platformOptions = [
-  { id: "steam", name: "Steam", hint: "Steam profile name or Steam ID" },
-  { id: "epic", name: "Epic Games", hint: "Epic display name" },
-  { id: "ea", name: "EA", hint: "EA ID" },
-  { id: "xbox", name: "Xbox", hint: "Xbox gamertag" },
-  { id: "playstation", name: "PlayStation", hint: "PSN online ID" },
-  { id: "nintendo", name: "Nintendo", hint: "Nintendo nickname" },
-  { id: "riot", name: "Riot Games", hint: "Riot ID, e.g. name#tag" },
-  { id: "battlenet", name: "Battle.net", hint: "BattleTag, e.g. name#1234" },
-  { id: "ubisoft", name: "Ubisoft Connect", hint: "Ubisoft username" },
-  { id: "discord", name: "Discord", hint: "Discord username" },
-  { id: "twitch", name: "Twitch", hint: "Twitch channel name" },
+  {
+    id: "steam",
+    name: "Steam",
+    hint: "Steam profile name or Steam ID",
+    iconUrl: "https://cdn.simpleicons.org/steam/white",
+    bindUrl: "https://steamcommunity.com/login/home/",
+  },
+  {
+    id: "epic",
+    name: "Epic Games",
+    hint: "Epic display name",
+    iconUrl: "https://cdn.simpleicons.org/epicgames/white",
+    bindUrl: "https://www.epicgames.com/account/connections",
+  },
+  {
+    id: "ea",
+    name: "EA",
+    hint: "EA ID",
+    iconUrl: "https://cdn.simpleicons.org/ea/white",
+    bindUrl: "https://myaccount.ea.com/cp-ui/connectaccounts/index",
+  },
+  {
+    id: "xbox",
+    name: "Xbox",
+    hint: "Xbox gamertag",
+    iconUrl: "https://cdn.simpleicons.org/xbox/white",
+    bindUrl: "https://account.xbox.com/Profile",
+  },
+  {
+    id: "playstation",
+    name: "PlayStation",
+    hint: "PSN online ID",
+    iconUrl: "https://cdn.simpleicons.org/playstation/white",
+    bindUrl: "https://www.playstation.com/acct/",
+  },
+  {
+    id: "nintendo",
+    name: "Nintendo",
+    hint: "Nintendo nickname",
+    iconUrl: "https://cdn.simpleicons.org/nintendo/white",
+    bindUrl: "https://accounts.nintendo.com/",
+  },
+  {
+    id: "riot",
+    name: "Riot Games",
+    hint: "Riot ID, e.g. name#tag",
+    iconUrl: "https://cdn.simpleicons.org/riotgames/white",
+    bindUrl: "https://account.riotgames.com/",
+  },
+  {
+    id: "battlenet",
+    name: "Battle.net",
+    hint: "BattleTag, e.g. name#1234",
+    iconUrl: "https://cdn.simpleicons.org/battledotnet/white",
+    bindUrl: "https://account.battle.net/connections",
+  },
+  {
+    id: "ubisoft",
+    name: "Ubisoft Connect",
+    hint: "Ubisoft username",
+    iconUrl: "https://cdn.simpleicons.org/ubisoft/white",
+    bindUrl: "https://account.ubisoft.com/account-information",
+  },
+  {
+    id: "discord",
+    name: "Discord",
+    hint: "Discord username",
+    iconUrl: "https://cdn.simpleicons.org/discord/white",
+    bindUrl: "https://discord.com/channels/@me",
+  },
+  {
+    id: "twitch",
+    name: "Twitch",
+    hint: "Twitch channel name",
+    iconUrl: "https://cdn.simpleicons.org/twitch/white",
+    bindUrl: "https://www.twitch.tv/settings/connections",
+  },
 ] as const;
 
 const profileCopy = {
@@ -60,6 +126,8 @@ const profileCopy = {
     accountName: "Account name",
     profileUrl: "Profile URL",
     save: "Save",
+    connect: "Go bind",
+    openProfile: "Open profile",
     unlink: "Unlink",
     currentPassword: "Current password",
     newPassword: "New password",
@@ -71,7 +139,8 @@ const profileCopy = {
     fallbackError: "Something went wrong.",
     emailVerified: "Email login enabled",
     sessionProtected: "HttpOnly session cookie",
-    privacyNote: "Platform links are stored in your Riversoft profile and can be edited or removed at any time.",
+    privacyNote:
+      "Click Go bind to open the official platform account page, then save your account name or profile link here.",
     notLinked: "Not linked",
   },
   zh: {
@@ -94,6 +163,8 @@ const profileCopy = {
     accountName: "平台账号名",
     profileUrl: "主页链接",
     save: "保存",
+    connect: "前往绑定",
+    openProfile: "打开主页",
     unlink: "解绑",
     currentPassword: "当前密码",
     newPassword: "新密码",
@@ -105,7 +176,8 @@ const profileCopy = {
     fallbackError: "操作失败，请稍后重试。",
     emailVerified: "邮箱登录已启用",
     sessionProtected: "HttpOnly 会话 Cookie",
-    privacyNote: "游戏平台账号会保存到你的 Riversoft 资料中，可随时编辑或解绑。",
+    privacyNote:
+      "点击“前往绑定”会跳转到对应平台的官方账号页面，然后可在这里保存平台账号名或主页链接。",
     notLinked: "未绑定",
   },
 } as const;
@@ -121,6 +193,14 @@ function formatDate(value?: string) {
 
 function getPlatform(platforms: UserPlatform[] | undefined, id: string) {
   return platforms?.find((platform) => platform.platform === id);
+}
+
+function PlatformIcon({ src, name }: { src: string; name: string }) {
+  return (
+    <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white/10">
+      <img src={src} alt={`${name} logo`} className="h-5 w-5 object-contain" loading="lazy" />
+    </span>
+  );
 }
 
 export function ProfilePage() {
@@ -472,9 +552,7 @@ export function ProfilePage() {
                     <article key={platform.id} className="liquid-glass rounded-3xl p-4">
                       <div className="mb-4 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
-                            <Gamepad2 size={17} />
-                          </span>
+                          <PlatformIcon src={platform.iconUrl} name={platform.name} />
                           <div>
                             <h3 className="font-display text-base font-medium text-white">{platform.name}</h3>
                             <p className="text-xs text-white/45">{linked ? linked.accountName : t.notLinked}</p>
@@ -504,7 +582,16 @@ export function ProfilePage() {
                         />
                       </div>
 
-                      <div className="mt-4 flex gap-2">
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <a
+                          href={platform.bindUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                        >
+                          <ExternalLink size={14} />
+                          {t.connect}
+                        </a>
                         <button
                           type="button"
                           onClick={() => handlePlatformSave(platform.id)}
@@ -514,6 +601,17 @@ export function ProfilePage() {
                           {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
                           {t.save}
                         </button>
+                        {linked?.profileUrl ? (
+                          <a
+                            href={linked.profileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+                          >
+                            <ExternalLink size={14} />
+                            {t.openProfile}
+                          </a>
+                        ) : null}
                         {linked ? (
                           <button
                             type="button"
