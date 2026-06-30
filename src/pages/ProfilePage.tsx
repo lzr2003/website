@@ -28,74 +28,85 @@ const platformOptions = [
     id: "steam",
     name: "Steam",
     iconUrl: "https://cdn.simpleicons.org/steam/white",
-    bindUrl: "https://steamcommunity.com/login/home/",
+    bindUrl: `${API_BASE_URL}/auth/steam`,
+    verifiedBinding: true,
   },
   {
     id: "epic",
     name: "Epic Games",
     iconUrl: "https://cdn.simpleicons.org/epicgames/white",
     bindUrl: "https://www.epicgames.com/account/connections",
+    verifiedBinding: false,
   },
   {
     id: "ea",
     name: "EA",
     iconUrl: "https://cdn.simpleicons.org/ea/white",
     bindUrl: "https://myaccount.ea.com/cp-ui/connectaccounts/index",
+    verifiedBinding: false,
   },
   {
     id: "xbox",
     name: "Xbox",
     iconUrl: "https://cdn.simpleicons.org/xbox/white",
     bindUrl: "https://account.xbox.com/Profile",
+    verifiedBinding: false,
   },
   {
     id: "playstation",
     name: "PlayStation",
     iconUrl: "https://cdn.simpleicons.org/playstation/white",
     bindUrl: "https://www.playstation.com/acct/",
+    verifiedBinding: false,
   },
   {
     id: "nintendo",
     name: "Nintendo",
     iconUrl: "https://cdn.simpleicons.org/nintendo/white",
     bindUrl: "https://accounts.nintendo.com/",
+    verifiedBinding: false,
   },
   {
     id: "riot",
     name: "Riot Games",
     iconUrl: "https://cdn.simpleicons.org/riotgames/white",
     bindUrl: "https://account.riotgames.com/",
+    verifiedBinding: false,
   },
   {
     id: "battlenet",
     name: "Battle.net",
     iconUrl: "https://cdn.simpleicons.org/battledotnet/white",
     bindUrl: "https://account.battle.net/connections",
+    verifiedBinding: false,
   },
   {
     id: "ubisoft",
     name: "Ubisoft Connect",
     iconUrl: "https://cdn.simpleicons.org/ubisoft/white",
     bindUrl: "https://account.ubisoft.com/account-information",
+    verifiedBinding: false,
   },
   {
     id: "discord",
     name: "Discord",
     iconUrl: "https://cdn.simpleicons.org/discord/white",
     bindUrl: "https://discord.com/channels/@me",
+    verifiedBinding: false,
   },
   {
     id: "twitch",
     name: "Twitch",
     iconUrl: "https://cdn.simpleicons.org/twitch/white",
     bindUrl: "https://www.twitch.tv/settings/connections",
+    verifiedBinding: false,
   },
 ] as const;
 
 const profileCopy = {
   en: {
     title: "Player Profile",
-    subtitle: "Manage your public profile, game platform links, and account security.",
+    subtitle: "Manage your public profile, verified game platform links, and account security.",
     backHome: "Back to Home",
     overview: "Account Overview",
     profile: "Public Profile",
@@ -108,24 +119,33 @@ const profileCopy = {
     website: "Website",
     memberSince: "Member since",
     saveProfile: "Save profile",
-    connect: "Go bind",
+    connectSteam: "Bind with Steam",
+    openOfficial: "Open official page",
+    connected: "Bound",
+    linkedAs: "Linked as",
+    openProfile: "Open profile",
+    unlink: "Unbind",
     currentPassword: "Current password",
     newPassword: "New password",
     confirmPassword: "Confirm password",
     updatePassword: "Update password",
     saved: "Saved successfully.",
+    unlinked: "Platform unbound.",
+    steamLinked: "Steam account linked successfully.",
+    steamLinkFailed: "Steam binding failed or expired. Please try again.",
     passwordSaved: "Password updated. Other sessions have been signed out.",
     passwordMismatch: "New passwords do not match.",
     fallbackError: "Something went wrong.",
     emailVerified: "Email login enabled",
     sessionProtected: "HttpOnly session cookie",
     privacyNote:
-      "Platform cards only open the official binding or account page. No manual account fields are stored on Riversoft.",
+      "Steam uses OpenID to verify account ownership. Other platform cards only open official account pages until verified binding is added.",
     platformHint: "Official account page",
+    steamHint: "Verified Steam OpenID binding",
   },
   zh: {
     title: "玩家资料",
-    subtitle: "管理公开资料、游戏平台跳转绑定与账号安全。",
+    subtitle: "管理公开资料、已验证游戏平台绑定与账号安全。",
     backHome: "返回首页",
     overview: "账号概览",
     profile: "公开资料",
@@ -138,20 +158,29 @@ const profileCopy = {
     website: "个人网站",
     memberSince: "注册时间",
     saveProfile: "保存资料",
-    connect: "前往绑定",
+    connectSteam: "绑定 Steam",
+    openOfficial: "打开官方页面",
+    connected: "已绑定",
+    linkedAs: "已绑定为",
+    openProfile: "打开资料页",
+    unlink: "解绑",
     currentPassword: "当前密码",
     newPassword: "新密码",
     confirmPassword: "确认新密码",
     updatePassword: "修改密码",
     saved: "保存成功。",
+    unlinked: "平台已解绑。",
+    steamLinked: "Steam 账号绑定成功。",
+    steamLinkFailed: "Steam 绑定失败或已过期，请重试。",
     passwordSaved: "密码已更新，其他会话已退出。",
     passwordMismatch: "两次输入的新密码不一致。",
     fallbackError: "操作失败，请稍后重试。",
     emailVerified: "邮箱登录已启用",
     sessionProtected: "HttpOnly 会话 Cookie",
     privacyNote:
-      "平台卡片只跳转到对应官方绑定或账号页面，不再手动填写或保存平台账号信息。",
+      "Steam 使用 OpenID 验证账号归属。其他平台在加入可验证绑定前，只保留官方账号页面入口。",
     platformHint: "官方账号页面",
+    steamHint: "Steam OpenID 验证绑定",
   },
 } as const;
 
@@ -190,6 +219,7 @@ export function ProfilePage() {
   });
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [updatingPlatform, setUpdatingPlatform] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -202,6 +232,33 @@ export function ProfilePage() {
       navigate("/login");
     }
   }, [loading, user, navigate]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const steamStatus = params.get("steam");
+
+    if (!steamStatus) return;
+
+    params.delete("steam");
+    const nextSearch = params.toString();
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`
+    );
+
+    if (steamStatus === "linked") {
+      setError("");
+      setMessage(t.steamLinked);
+      refreshUser().catch((err) => {
+        console.error("Failed to refresh user after Steam binding:", err);
+      });
+      return;
+    }
+
+    setMessage("");
+    setError(t.steamLinkFailed);
+  }, [refreshUser, t.steamLinked, t.steamLinkFailed]);
 
   useEffect(() => {
     if (!user) return;
@@ -277,6 +334,27 @@ export function ProfilePage() {
     }
   };
 
+  const handleUnlinkPlatform = async (platformId: string) => {
+    setError("");
+    setMessage("");
+    setUpdatingPlatform(platformId);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/profile/platforms/${platformId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error(await parseError(res));
+      await refreshUser();
+      setMessage(t.unlinked);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.fallbackError);
+    } finally {
+      setUpdatingPlatform(null);
+    }
+  };
+
   if (loading || !user) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-black text-white">
@@ -286,6 +364,7 @@ export function ProfilePage() {
   }
 
   const displayName = user.name || user.email.split("@")[0];
+  const linkedPlatforms = new Map((user.platforms || []).map((platform) => [platform.platform, platform]));
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black font-body text-white">
@@ -448,28 +527,74 @@ export function ProfilePage() {
               <p className="mb-5 text-sm text-white/55">{t.privacyNote}</p>
 
               <div className="grid gap-4 xl:grid-cols-2">
-                {platformOptions.map((platform) => (
-                  <article key={platform.id} className="liquid-glass rounded-3xl p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <PlatformIcon src={platform.iconUrl} name={platform.name} />
-                        <div>
-                          <h3 className="font-display text-base font-medium text-white">{platform.name}</h3>
-                          <p className="text-xs text-white/45">{t.platformHint}</p>
+                {platformOptions.map((platform) => {
+                  const linkedPlatform = linkedPlatforms.get(platform.id);
+                  const isUpdating = updatingPlatform === platform.id;
+
+                  return (
+                    <article key={platform.id} className="liquid-glass rounded-3xl p-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <PlatformIcon src={platform.iconUrl} name={platform.name} />
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="font-display text-base font-medium text-white">{platform.name}</h3>
+                              {linkedPlatform ? (
+                                <span className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2 py-0.5 text-[0.65rem] text-white/70">
+                                  <BadgeCheck size={12} />
+                                  {t.connected}
+                                </span>
+                              ) : null}
+                            </div>
+                            <p className="mt-1 truncate text-xs text-white/45">
+                              {linkedPlatform
+                                ? `${t.linkedAs} ${linkedPlatform.accountName}`
+                                : platform.verifiedBinding
+                                  ? t.steamHint
+                                  : t.platformHint}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex shrink-0 flex-wrap gap-2">
+                          {linkedPlatform?.profileUrl ? (
+                            <a
+                              href={linkedPlatform.profileUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                            >
+                              <ExternalLink size={14} />
+                              {t.openProfile}
+                            </a>
+                          ) : null}
+
+                          {linkedPlatform ? (
+                            <button
+                              type="button"
+                              disabled={isUpdating}
+                              onClick={() => handleUnlinkPlatform(platform.id)}
+                              className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-60"
+                            >
+                              {isUpdating ? <Loader2 size={14} className="animate-spin" /> : null}
+                              {t.unlink}
+                            </button>
+                          ) : (
+                            <a
+                              href={platform.bindUrl}
+                              target={platform.verifiedBinding ? undefined : "_blank"}
+                              rel={platform.verifiedBinding ? undefined : "noreferrer"}
+                              className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                            >
+                              <ExternalLink size={14} />
+                              {platform.verifiedBinding ? t.connectSteam : t.openOfficial}
+                            </a>
+                          )}
                         </div>
                       </div>
-                      <a
-                        href={platform.bindUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-                      >
-                        <ExternalLink size={14} />
-                        {t.connect}
-                      </a>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  );
+                })}
               </div>
             </section>
 
