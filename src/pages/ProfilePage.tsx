@@ -1,7 +1,7 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
+import { useEffect, useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -16,184 +16,184 @@ import {
   Save,
   ShieldCheck,
   User as UserIcon,
-} from 'lucide-react';
+} from "lucide-react";
 
 const backgroundVideo =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260315_073750_51473149-4350-4920-ae24-c8214286f323.mp4';
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260315_073750_51473149-4350-4920-ae24-c8214286f323.mp4";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 const platformOptions = [
   {
-    id: 'steam',
-    name: 'Steam',
-    iconUrl: 'https://cdn.simpleicons.org/steam/white',
+    id: "steam",
+    name: "Steam",
+    iconUrl: "https://cdn.simpleicons.org/steam/FFFFFF",
     bindUrl: `${API_BASE_URL}/auth/steam`,
-    verifiedBinding: true,
+    canShowBound: true,
   },
   {
-    id: 'discord',
-    name: 'Discord',
-    iconUrl: 'https://cdn.simpleicons.org/discord/white',
-    bindUrl: `${API_BASE_URL}/auth/discord`,
-    verifiedBinding: true,
+    id: "epic",
+    name: "Epic Games",
+    iconUrl: "https://cdn.simpleicons.org/epicgames/FFFFFF",
+    bindUrl: "https://www.epicgames.com/account/connections",
+    canShowBound: false,
   },
   {
-    id: 'twitch',
-    name: 'Twitch',
-    iconUrl: 'https://cdn.simpleicons.org/twitch/white',
-    bindUrl: `${API_BASE_URL}/auth/twitch`,
-    verifiedBinding: true,
+    id: "ea",
+    name: "EA",
+    iconUrl: "https://cdn.simpleicons.org/ea/FFFFFF",
+    bindUrl: "https://myaccount.ea.com/cp-ui/connectaccounts/index",
+    canShowBound: false,
   },
   {
-    id: 'epic',
-    name: 'Epic Games',
-    iconUrl: 'https://cdn.simpleicons.org/epicgames/white',
-    bindUrl: 'https://www.epicgames.com/account/connections',
-    verifiedBinding: false,
+    id: "xbox",
+    name: "Xbox",
+    iconUrl: "https://cdn.simpleicons.org/xbox/FFFFFF",
+    bindUrl: "https://account.xbox.com/Profile",
+    canShowBound: false,
   },
   {
-    id: 'ea',
-    name: 'EA',
-    iconUrl: 'https://cdn.simpleicons.org/ea/white',
-    bindUrl: 'https://myaccount.ea.com/cp-ui/connectaccounts/index',
-    verifiedBinding: false,
+    id: "playstation",
+    name: "PlayStation",
+    iconUrl: "https://cdn.simpleicons.org/playstation/FFFFFF",
+    bindUrl: "https://www.playstation.com/acct/",
+    canShowBound: false,
   },
   {
-    id: 'xbox',
-    name: 'Xbox',
-    iconUrl: 'https://cdn.simpleicons.org/xbox/white',
-    bindUrl: 'https://account.xbox.com/Profile',
-    verifiedBinding: false,
+    id: "nintendo",
+    name: "Nintendo",
+    iconUrl: "https://cdn.simpleicons.org/nintendoswitch/FFFFFF",
+    bindUrl: "https://accounts.nintendo.com/",
+    canShowBound: false,
   },
   {
-    id: 'playstation',
-    name: 'PlayStation',
-    iconUrl: 'https://cdn.simpleicons.org/playstation/white',
-    bindUrl: 'https://www.playstation.com/acct/',
-    verifiedBinding: false,
+    id: "riot",
+    name: "Riot Games",
+    iconUrl: "https://cdn.simpleicons.org/riotgames/FFFFFF",
+    bindUrl: "https://account.riotgames.com/",
+    canShowBound: false,
   },
   {
-    id: 'nintendo',
-    name: 'Nintendo',
-    iconUrl: 'https://cdn.simpleicons.org/nintendo/white',
-    bindUrl: 'https://accounts.nintendo.com/',
-    verifiedBinding: false,
+    id: "battlenet",
+    name: "Battle.net",
+    iconUrl: "https://cdn.simpleicons.org/battledotnet/FFFFFF",
+    bindUrl: "https://account.battle.net/connections",
+    canShowBound: false,
   },
   {
-    id: 'riot',
-    name: 'Riot Games',
-    iconUrl: 'https://cdn.simpleicons.org/riotgames/white',
-    bindUrl: 'https://account.riotgames.com/',
-    verifiedBinding: false,
+    id: "ubisoft",
+    name: "Ubisoft Connect",
+    iconUrl: "https://cdn.simpleicons.org/ubisoft/FFFFFF",
+    bindUrl: "https://account.ubisoft.com/account-information",
+    canShowBound: false,
   },
   {
-    id: 'battlenet',
-    name: 'Battle.net',
-    iconUrl: 'https://cdn.simpleicons.org/battledotnet/white',
-    bindUrl: 'https://account.battle.net/connections',
-    verifiedBinding: false,
+    id: "discord",
+    name: "Discord",
+    iconUrl: "https://cdn.simpleicons.org/discord/FFFFFF",
+    bindUrl: "https://discord.com/channels/@me",
+    canShowBound: false,
   },
   {
-    id: 'ubisoft',
-    name: 'Ubisoft Connect',
-    iconUrl: 'https://cdn.simpleicons.org/ubisoft/white',
-    bindUrl: 'https://account.ubisoft.com/account-information',
-    verifiedBinding: false,
+    id: "twitch",
+    name: "Twitch",
+    iconUrl: "https://cdn.simpleicons.org/twitch/FFFFFF",
+    bindUrl: "https://www.twitch.tv/settings/connections",
+    canShowBound: false,
   },
 ] as const;
 
 const profileCopy = {
   en: {
-    title: 'Player Profile',
-    subtitle: 'Manage your public profile, verified game platform links, and account security.',
-    backHome: 'Back to Home',
-    overview: 'Account Overview',
-    profile: 'Public Profile',
-    platforms: 'Game Platforms',
-    security: 'Security',
-    displayName: 'Display name',
-    avatar: 'Avatar URL',
-    bio: 'Bio / status',
-    location: 'Location',
-    website: 'Website',
-    memberSince: 'Member since',
-    saveProfile: 'Save profile',
-    connect: 'Bind',
-    openOfficial: 'Open official page',
-    connected: 'Bound',
-    linkedAs: 'Linked as',
-    openProfile: 'Open profile',
-    unlink: 'Unbind',
-    currentPassword: 'Current password',
-    newPassword: 'New password',
-    confirmPassword: 'Confirm password',
-    updatePassword: 'Update password',
-    saved: 'Saved successfully.',
-    unlinked: 'Platform unbound.',
-    platformLinked: 'account linked successfully.',
-    platformLinkFailed: 'binding failed or expired. Please try again.',
-    platformAlreadyLinked: 'is already linked to another RIVERSOFT account.',
-    platformUnconfigured: 'binding is not configured on the server yet.',
-    platformUnsupported: 'binding is not supported yet.',
-    passwordSaved: 'Password updated. Other sessions have been signed out.',
-    passwordMismatch: 'New passwords do not match.',
-    fallbackError: 'Something went wrong.',
-    emailVerified: 'Email login enabled',
-    sessionProtected: 'HttpOnly session cookie',
+    title: "Player Profile",
+    subtitle: "Manage your public profile, platform links, and account security.",
+    backHome: "Back to Home",
+    overview: "Account Overview",
+    profile: "Public Profile",
+    platforms: "Game Platforms",
+    security: "Security",
+    displayName: "Display name",
+    avatar: "Avatar URL",
+    bio: "Bio / status",
+    location: "Location",
+    website: "Website",
+    memberSince: "Member since",
+    saveProfile: "Save profile",
+    bind: "Bind",
+    openOfficial: "Open official page",
+    connected: "Bound",
+    linkedAs: "Bound as",
+    openProfile: "Open profile",
+    unlink: "Unbind",
+    currentPassword: "Current password",
+    newPassword: "New password",
+    confirmPassword: "Confirm password",
+    updatePassword: "Update password",
+    saved: "Saved successfully.",
+    unlinked: "Platform unbound.",
+    platformLinked: "account linked successfully.",
+    platformLinkFailed: "binding failed or expired. Please try again.",
+    platformAlreadyLinked: "is already linked to another RIVERSOFT account.",
+    platformUnconfigured: "binding is not configured on the server yet.",
+    platformUnsupported: "binding is not supported yet.",
+    passwordSaved: "Password updated. Other sessions have been signed out.",
+    passwordMismatch: "New passwords do not match.",
+    fallbackError: "Something went wrong.",
+    emailVerified: "Email login enabled",
+    sessionProtected: "HttpOnly session cookie",
     privacyNote:
-      'Steam, Discord, and Twitch now use verified account binding. Other platform cards only open official account pages until their official authorization flow is added.',
-    platformHint: 'Official account page',
-    verifiedHint: 'Verified OAuth / OpenID binding',
+      "Steam can show a bound status after completion. Other platform cards open their official account pages.",
+    bindingHint: "RIVERSOFT account binding",
+    officialHint: "Official account page",
   },
   zh: {
-    title: '玩家资料',
-    subtitle: '管理公开资料、已验证游戏平台绑定与账号安全。',
-    backHome: '返回首页',
-    overview: '账号概览',
-    profile: '公开资料',
-    platforms: '游戏平台',
-    security: '账号安全',
-    displayName: '用户名 / 显示名称',
-    avatar: '头像 URL',
-    bio: '个人简介 / 状态',
-    location: '地区',
-    website: '个人网站',
-    memberSince: '注册时间',
-    saveProfile: '保存资料',
-    connect: '绑定',
-    openOfficial: '打开官方页面',
-    connected: '已绑定',
-    linkedAs: '已绑定为',
-    openProfile: '打开资料页',
-    unlink: '解绑',
-    currentPassword: '当前密码',
-    newPassword: '新密码',
-    confirmPassword: '确认新密码',
-    updatePassword: '修改密码',
-    saved: '保存成功。',
-    unlinked: '平台已解绑。',
-    platformLinked: '账号绑定成功。',
-    platformLinkFailed: '绑定失败或已过期，请重试。',
-    platformAlreadyLinked: '已绑定到另一个 RIVERSOFT 账号。',
-    platformUnconfigured: '服务端尚未配置该平台绑定参数。',
-    platformUnsupported: '暂未支持本站验证绑定。',
-    passwordSaved: '密码已更新，其他会话已退出。',
-    passwordMismatch: '两次输入的新密码不一致。',
-    fallbackError: '操作失败，请稍后重试。',
-    emailVerified: '邮箱登录已启用',
-    sessionProtected: 'HttpOnly 会话 Cookie',
+    title: "玩家资料",
+    subtitle: "管理公开资料、平台入口与账号安全。",
+    backHome: "返回首页",
+    overview: "账号概览",
+    profile: "公开资料",
+    platforms: "游戏平台",
+    security: "账号安全",
+    displayName: "用户名 / 显示名称",
+    avatar: "头像 URL",
+    bio: "个人简介 / 状态",
+    location: "地区",
+    website: "个人网站",
+    memberSince: "注册时间",
+    saveProfile: "保存资料",
+    bind: "绑定",
+    openOfficial: "打开官方页面",
+    connected: "已绑定",
+    linkedAs: "已绑定为",
+    openProfile: "打开资料页",
+    unlink: "解绑",
+    currentPassword: "当前密码",
+    newPassword: "新密码",
+    confirmPassword: "确认新密码",
+    updatePassword: "修改密码",
+    saved: "保存成功。",
+    unlinked: "平台已解绑。",
+    platformLinked: "账号绑定成功。",
+    platformLinkFailed: "绑定失败或已过期，请重试。",
+    platformAlreadyLinked: "已绑定到另一个 RIVERSOFT 账号。",
+    platformUnconfigured: "服务端尚未配置该平台绑定参数。",
+    platformUnsupported: "暂未支持本站绑定。",
+    passwordSaved: "密码已更新，其他会话已退出。",
+    passwordMismatch: "两次输入的新密码不一致。",
+    fallbackError: "操作失败，请稍后重试。",
+    emailVerified: "邮箱登录已启用",
+    sessionProtected: "HttpOnly 会话 Cookie",
     privacyNote:
-      'Steam、Discord、Twitch 已使用可验证账号绑定。其他平台在接入官方授权流程前，只保留官方账号页面入口。',
-    platformHint: '官方账号页面',
-    verifiedHint: 'OAuth / OpenID 验证绑定',
+      "Steam 完成绑定后会显示已绑定。其他平台卡片会打开对应官方账号页面。",
+    bindingHint: "RIVERSOFT 账号绑定",
+    officialHint: "官方账号页面",
   },
 } as const;
 
 function formatDate(value?: string) {
-  if (!value) return '—';
+  if (!value) return "—";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
+  if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleDateString();
 }
 
@@ -203,8 +203,8 @@ function getPlatformName(platformId: string) {
 
 function PlatformIcon({ src, name }: { src: string; name: string }) {
   return (
-    <span className='flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white/10'>
-      <img src={src} alt={`${name} logo`} className='h-5 w-5 object-contain' loading='lazy' />
+    <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white/10">
+      <img src={src} alt={`${name} logo`} className="h-5 w-5 object-contain" loading="lazy" />
     </span>
   );
 }
@@ -216,22 +216,22 @@ export function ProfilePage() {
   const t = profileCopy[language];
 
   const [profileForm, setProfileForm] = useState({
-    name: '',
-    avatar: '',
-    bio: '',
-    location: '',
-    website: '',
+    name: "",
+    avatar: "",
+    bio: "",
+    location: "",
+    website: "",
   });
   const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [updatingPlatform, setUpdatingPlatform] = useState<string | null>(null);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     document.title = `${t.title} | RIVERSOFT`;
@@ -239,52 +239,52 @@ export function ProfilePage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [loading, user, navigate]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const legacySteamStatus = params.get('steam');
-    const platformId = params.get('platform') || (legacySteamStatus ? 'steam' : '');
-    const status = params.get('status') || legacySteamStatus;
+    const legacySteamStatus = params.get("steam");
+    const platformId = params.get("platform") || (legacySteamStatus ? "steam" : "");
+    const status = params.get("status") || legacySteamStatus;
 
     if (!platformId || !status) return;
 
-    params.delete('platform');
-    params.delete('status');
-    params.delete('steam');
+    params.delete("platform");
+    params.delete("status");
+    params.delete("steam");
     const nextSearch = params.toString();
     window.history.replaceState(
       {},
-      '',
-      `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash}`
+      "",
+      `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`
     );
 
     const platformName = getPlatformName(platformId);
 
-    if (status === 'linked') {
-      setError('');
+    if (status === "linked") {
+      setError("");
       setMessage(`${platformName} ${t.platformLinked}`);
       refreshUser().catch((err) => {
-        console.error('Failed to refresh user after platform binding:', err);
+        console.error("Failed to refresh user after platform binding:", err);
       });
       return;
     }
 
-    setMessage('');
+    setMessage("");
 
-    if (status === 'conflict') {
+    if (status === "conflict") {
       setError(`${platformName} ${t.platformAlreadyLinked}`);
       return;
     }
 
-    if (status === 'unconfigured') {
+    if (status === "unconfigured") {
       setError(`${platformName} ${t.platformUnconfigured}`);
       return;
     }
 
-    if (status === 'unsupported') {
+    if (status === "unsupported") {
       setError(`${platformName} ${t.platformUnsupported}`);
       return;
     }
@@ -296,11 +296,11 @@ export function ProfilePage() {
     if (!user) return;
 
     setProfileForm({
-      name: user.name || '',
-      avatar: user.avatar || '',
-      bio: user.bio || '',
-      location: user.location || '',
-      website: user.website || '',
+      name: user.name || "",
+      avatar: user.avatar || "",
+      bio: user.bio || "",
+      location: user.location || "",
+      website: user.website || "",
     });
   }, [user]);
 
@@ -311,15 +311,15 @@ export function ProfilePage() {
 
   const handleProfileSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
     setSavingProfile(true);
 
     try {
       const res = await fetch(`${API_BASE_URL}/profile`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(profileForm),
       });
 
@@ -335,8 +335,8 @@ export function ProfilePage() {
 
   const handlePasswordSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       setError(t.passwordMismatch);
@@ -347,9 +347,9 @@ export function ProfilePage() {
 
     try {
       const res = await fetch(`${API_BASE_URL}/profile/password`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           currentPassword: passwordForm.currentPassword,
           newPassword: passwordForm.newPassword,
@@ -357,7 +357,7 @@ export function ProfilePage() {
       });
 
       if (!res.ok) throw new Error(await parseError(res));
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setMessage(t.passwordSaved);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.fallbackError);
@@ -367,14 +367,14 @@ export function ProfilePage() {
   };
 
   const handleUnlinkPlatform = async (platformId: string) => {
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
     setUpdatingPlatform(platformId);
 
     try {
       const res = await fetch(`${API_BASE_URL}/profile/platforms/${platformId}`, {
-        method: 'DELETE',
-        credentials: 'include',
+        method: "DELETE",
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error(await parseError(res));
@@ -389,13 +389,13 @@ export function ProfilePage() {
 
   if (loading || !user) {
     return (
-      <main className='flex min-h-screen items-center justify-center bg-black text-white'>
-        <Loader2 className='animate-spin' size={28} />
+      <main className="flex min-h-screen items-center justify-center bg-black text-white">
+        <Loader2 className="animate-spin" size={28} />
       </main>
     );
   }
 
-  const displayName = user.name || user.email.split('@')[0];
+  const displayName = user.name || user.email.split("@")[0];
   const linkedPlatforms = new Map(
     (user.platforms || [])
       .filter((platform) => platform.platformUserId)
@@ -403,80 +403,80 @@ export function ProfilePage() {
   );
 
   return (
-    <main className='relative min-h-screen overflow-hidden bg-black font-body text-white'>
+    <main className="relative min-h-screen overflow-hidden bg-black font-body text-white">
       <video
-        className='fixed inset-0 z-0 h-full w-full object-cover'
+        className="fixed inset-0 z-0 h-full w-full object-cover"
         src={backgroundVideo}
         autoPlay
         loop
         muted
         playsInline
-        aria-hidden='true'
+        aria-hidden="true"
       />
-      <div className='fixed inset-0 z-[1] bg-black/55 backdrop-blur-sm' aria-hidden='true' />
+      <div className="fixed inset-0 z-[1] bg-black/55 backdrop-blur-sm" aria-hidden="true" />
 
-      <section className='relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 lg:px-8'>
-        <div className='mb-6 flex items-center justify-between gap-4'>
+      <section className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 lg:px-8">
+        <div className="mb-6 flex items-center justify-between gap-4">
           <Link
-            to='/'
-            className='liquid-glass inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm text-white/80 transition-transform hover:scale-105 active:scale-95'
+            to="/"
+            className="liquid-glass inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm text-white/80 transition-transform hover:scale-105 active:scale-95"
           >
             <ArrowLeft size={16} />
             {t.backHome}
           </Link>
-          <div className='liquid-glass flex h-11 items-center gap-2 rounded-full px-4 text-sm text-white/70'>
+          <div className="liquid-glass flex h-11 items-center gap-2 rounded-full px-4 text-sm text-white/70">
             <ShieldCheck size={16} />
             RIVERSOFT ID
           </div>
         </div>
 
-        <div className='grid flex-1 gap-5 lg:grid-cols-[0.9fr_1.6fr]'>
-          <aside className='liquid-glass-strong rounded-[2rem] p-6 lg:p-8'>
-            <div className='flex flex-col items-center text-center'>
-              <div className='relative h-28 w-28 overflow-hidden rounded-full border border-white/20 bg-white/10'>
+        <div className="grid flex-1 gap-5 lg:grid-cols-[0.9fr_1.6fr]">
+          <aside className="liquid-glass-strong rounded-[2rem] p-6 lg:p-8">
+            <div className="flex flex-col items-center text-center">
+              <div className="relative h-28 w-28 overflow-hidden rounded-full border border-white/20 bg-white/10">
                 {profileForm.avatar ? (
-                  <img src={profileForm.avatar} alt='' className='h-full w-full object-cover' />
+                  <img src={profileForm.avatar} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <div className='flex h-full w-full items-center justify-center'>
-                    <UserIcon size={38} className='text-white/70' />
+                  <div className="flex h-full w-full items-center justify-center">
+                    <UserIcon size={38} className="text-white/70" />
                   </div>
                 )}
               </div>
-              <h1 className='mt-5 font-display text-4xl font-medium tracking-[-0.05em] text-white'>
+              <h1 className="mt-5 font-display text-4xl font-medium tracking-[-0.05em] text-white">
                 {displayName}
               </h1>
-              <p className='mt-2 max-w-sm text-sm leading-6 text-white/60'>{t.subtitle}</p>
+              <p className="mt-2 max-w-sm text-sm leading-6 text-white/60">{t.subtitle}</p>
             </div>
 
-            <div className='mt-8 grid gap-3 text-sm text-white/70'>
-              <div className='liquid-glass flex items-center gap-3 rounded-2xl px-4 py-3'>
-                <Mail size={16} className='text-white/50' />
-                <span className='truncate'>{user.email}</span>
+            <div className="mt-8 grid gap-3 text-sm text-white/70">
+              <div className="liquid-glass flex items-center gap-3 rounded-2xl px-4 py-3">
+                <Mail size={16} className="text-white/50" />
+                <span className="truncate">{user.email}</span>
               </div>
-              <div className='liquid-glass flex items-center gap-3 rounded-2xl px-4 py-3'>
-                <Gamepad2 size={16} className='text-white/50' />
+              <div className="liquid-glass flex items-center gap-3 rounded-2xl px-4 py-3">
+                <Gamepad2 size={16} className="text-white/50" />
                 <span>{platformOptions.length} {t.platforms}</span>
               </div>
-              <div className='liquid-glass flex items-center gap-3 rounded-2xl px-4 py-3'>
-                <BadgeCheck size={16} className='text-white/50' />
+              <div className="liquid-glass flex items-center gap-3 rounded-2xl px-4 py-3">
+                <BadgeCheck size={16} className="text-white/50" />
                 <span>{t.emailVerified}</span>
               </div>
-              <div className='liquid-glass flex items-center gap-3 rounded-2xl px-4 py-3'>
-                <LockKeyhole size={16} className='text-white/50' />
+              <div className="liquid-glass flex items-center gap-3 rounded-2xl px-4 py-3">
+                <LockKeyhole size={16} className="text-white/50" />
                 <span>{t.sessionProtected}</span>
               </div>
             </div>
 
-            <div className='mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-5'>
-              <p className='font-body text-[0.65rem] uppercase tracking-[0.28em] text-white/45'>
+            <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+              <p className="font-body text-[0.65rem] uppercase tracking-[0.28em] text-white/45">
                 {t.overview}
               </p>
-              <div className='mt-4 space-y-3 text-sm text-white/65'>
+              <div className="mt-4 space-y-3 text-sm text-white/65">
                 <p>ID #{user.id}</p>
                 <p>{t.memberSince}: {formatDate(user.createdAt)}</p>
-                {user.location ? <p className='flex items-center gap-2'><MapPin size={14} />{user.location}</p> : null}
+                {user.location ? <p className="flex items-center gap-2"><MapPin size={14} />{user.location}</p> : null}
                 {user.website ? (
-                  <a href={user.website} target='_blank' rel='noreferrer' className='flex items-center gap-2 text-white hover:text-white/80'>
+                  <a href={user.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white hover:text-white/80">
                     <Globe2 size={14} />{user.website}<ExternalLink size={12} />
                   </a>
                 ) : null}
@@ -484,122 +484,122 @@ export function ProfilePage() {
             </div>
           </aside>
 
-          <div className='space-y-5'>
+          <div className="space-y-5">
             {(message || error) ? (
-              <div className={`rounded-3xl border px-5 py-4 text-sm ${error ? 'border-red-400/30 bg-red-500/15 text-red-100' : 'border-white/15 bg-white/10 text-white/80'}`}>
+              <div className={`rounded-3xl border px-5 py-4 text-sm ${error ? "border-red-400/30 bg-red-500/15 text-red-100" : "border-white/15 bg-white/10 text-white/80"}`}>
                 {error || message}
               </div>
             ) : null}
 
-            <form onSubmit={handleProfileSubmit} className='liquid-glass-strong rounded-[2rem] p-6 lg:p-8'>
-              <div className='mb-6 flex items-center gap-3'>
+            <form onSubmit={handleProfileSubmit} className="liquid-glass-strong rounded-[2rem] p-6 lg:p-8">
+              <div className="mb-6 flex items-center gap-3">
                 <UserIcon size={20} />
-                <h2 className='font-display text-2xl font-medium tracking-[-0.04em]'>{t.profile}</h2>
+                <h2 className="font-display text-2xl font-medium tracking-[-0.04em]">{t.profile}</h2>
               </div>
 
-              <div className='grid gap-4 lg:grid-cols-2'>
-                <label className='space-y-2 text-sm text-white/70'>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <label className="space-y-2 text-sm text-white/70">
                   <span>{t.displayName}</span>
                   <input
                     value={profileForm.name}
                     onChange={(event) => setProfileForm((form) => ({ ...form, name: event.target.value }))}
-                    className='liquid-glass w-full rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25'
+                    className="liquid-glass w-full rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25"
                     maxLength={64}
                   />
                 </label>
-                <label className='space-y-2 text-sm text-white/70'>
+                <label className="space-y-2 text-sm text-white/70">
                   <span>{t.avatar}</span>
                   <input
                     value={profileForm.avatar}
                     onChange={(event) => setProfileForm((form) => ({ ...form, avatar: event.target.value }))}
-                    className='liquid-glass w-full rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25'
-                    placeholder='https://...'
+                    className="liquid-glass w-full rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25"
+                    placeholder="https://..."
                   />
                 </label>
-                <label className='space-y-2 text-sm text-white/70 lg:col-span-2'>
+                <label className="space-y-2 text-sm text-white/70 lg:col-span-2">
                   <span>{t.bio}</span>
                   <textarea
                     value={profileForm.bio}
                     onChange={(event) => setProfileForm((form) => ({ ...form, bio: event.target.value }))}
-                    className='liquid-glass min-h-28 w-full resize-none rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25'
+                    className="liquid-glass min-h-28 w-full resize-none rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25"
                     maxLength={500}
                   />
                 </label>
-                <label className='space-y-2 text-sm text-white/70'>
+                <label className="space-y-2 text-sm text-white/70">
                   <span>{t.location}</span>
                   <input
                     value={profileForm.location}
                     onChange={(event) => setProfileForm((form) => ({ ...form, location: event.target.value }))}
-                    className='liquid-glass w-full rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25'
+                    className="liquid-glass w-full rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25"
                     maxLength={80}
                   />
                 </label>
-                <label className='space-y-2 text-sm text-white/70'>
+                <label className="space-y-2 text-sm text-white/70">
                   <span>{t.website}</span>
                   <input
                     value={profileForm.website}
                     onChange={(event) => setProfileForm((form) => ({ ...form, website: event.target.value }))}
-                    className='liquid-glass w-full rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25'
-                    placeholder='https://...'
+                    className="liquid-glass w-full rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25"
+                    placeholder="https://..."
                   />
                 </label>
               </div>
 
               <button
-                type='submit'
+                type="submit"
                 disabled={savingProfile}
-                className='mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 font-display text-sm font-semibold text-black transition-transform hover:scale-105 active:scale-95 disabled:opacity-70'
+                className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 font-display text-sm font-semibold text-black transition-transform hover:scale-105 active:scale-95 disabled:opacity-70"
               >
-                {savingProfile ? <Loader2 size={16} className='animate-spin' /> : <Save size={16} />}
+                {savingProfile ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                 {t.saveProfile}
               </button>
             </form>
 
-            <section className='liquid-glass-strong rounded-[2rem] p-6 lg:p-8'>
-              <div className='mb-6 flex items-center gap-3'>
+            <section className="liquid-glass-strong rounded-[2rem] p-6 lg:p-8">
+              <div className="mb-6 flex items-center gap-3">
                 <Gamepad2 size={20} />
-                <h2 className='font-display text-2xl font-medium tracking-[-0.04em]'>{t.platforms}</h2>
+                <h2 className="font-display text-2xl font-medium tracking-[-0.04em]">{t.platforms}</h2>
               </div>
-              <p className='mb-5 text-sm text-white/55'>{t.privacyNote}</p>
+              <p className="mb-5 text-sm text-white/55">{t.privacyNote}</p>
 
-              <div className='grid gap-4 xl:grid-cols-2'>
+              <div className="grid gap-4 xl:grid-cols-2">
                 {platformOptions.map((platform) => {
                   const linkedPlatform = linkedPlatforms.get(platform.id);
                   const isLinked = Boolean(linkedPlatform?.platformUserId);
                   const isUpdating = updatingPlatform === platform.id;
 
                   return (
-                    <article key={platform.id} className='liquid-glass rounded-3xl p-4'>
-                      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-                        <div className='flex min-w-0 items-center gap-3'>
+                    <article key={platform.id} className="liquid-glass rounded-3xl p-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 items-center gap-3">
                           <PlatformIcon src={platform.iconUrl} name={platform.name} />
-                          <div className='min-w-0'>
-                            <div className='flex flex-wrap items-center gap-2'>
-                              <h3 className='font-display text-base font-medium text-white'>{platform.name}</h3>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="font-display text-base font-medium text-white">{platform.name}</h3>
                               {isLinked ? (
-                                <span className='inline-flex items-center gap-1 rounded-full border border-white/15 px-2 py-0.5 text-[0.65rem] text-white/70'>
+                                <span className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2 py-0.5 text-[0.65rem] text-white/70">
                                   <BadgeCheck size={12} />
                                   {t.connected}
                                 </span>
                               ) : null}
                             </div>
-                            <p className='mt-1 truncate text-xs text-white/45'>
+                            <p className="mt-1 truncate text-xs text-white/45">
                               {isLinked && linkedPlatform
                                 ? `${t.linkedAs} ${linkedPlatform.accountName}`
-                                : platform.verifiedBinding
-                                  ? t.verifiedHint
-                                  : t.platformHint}
+                                : platform.canShowBound
+                                  ? t.bindingHint
+                                  : t.officialHint}
                             </p>
                           </div>
                         </div>
 
-                        <div className='flex shrink-0 flex-wrap gap-2'>
+                        <div className="flex shrink-0 flex-wrap gap-2">
                           {isLinked && linkedPlatform?.profileUrl ? (
                             <a
                               href={linkedPlatform.profileUrl}
-                              target='_blank'
-                              rel='noreferrer'
-                              className='inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white'
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                             >
                               <ExternalLink size={14} />
                               {t.openProfile}
@@ -608,23 +608,23 @@ export function ProfilePage() {
 
                           {isLinked ? (
                             <button
-                              type='button'
+                              type="button"
                               disabled={isUpdating}
                               onClick={() => handleUnlinkPlatform(platform.id)}
-                              className='inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-60'
+                              className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-60"
                             >
-                              {isUpdating ? <Loader2 size={14} className='animate-spin' /> : null}
+                              {isUpdating ? <Loader2 size={14} className="animate-spin" /> : null}
                               {t.unlink}
                             </button>
                           ) : (
                             <a
                               href={platform.bindUrl}
-                              target={platform.verifiedBinding ? undefined : '_blank'}
-                              rel={platform.verifiedBinding ? undefined : 'noreferrer'}
-                              className='inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white'
+                              target={platform.canShowBound ? undefined : "_blank"}
+                              rel={platform.canShowBound ? undefined : "noreferrer"}
+                              className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                             >
                               <ExternalLink size={14} />
-                              {platform.verifiedBinding ? `${t.connect} ${platform.name}` : t.openOfficial}
+                              {platform.canShowBound ? `${t.bind} ${platform.name}` : t.openOfficial}
                             </a>
                           )}
                         </div>
@@ -635,42 +635,42 @@ export function ProfilePage() {
               </div>
             </section>
 
-            <form onSubmit={handlePasswordSubmit} className='liquid-glass-strong rounded-[2rem] p-6 lg:p-8'>
-              <div className='mb-6 flex items-center gap-3'>
+            <form onSubmit={handlePasswordSubmit} className="liquid-glass-strong rounded-[2rem] p-6 lg:p-8">
+              <div className="mb-6 flex items-center gap-3">
                 <KeyRound size={20} />
-                <h2 className='font-display text-2xl font-medium tracking-[-0.04em]'>{t.security}</h2>
+                <h2 className="font-display text-2xl font-medium tracking-[-0.04em]">{t.security}</h2>
               </div>
 
-              <div className='grid gap-4 lg:grid-cols-3'>
+              <div className="grid gap-4 lg:grid-cols-3">
                 <input
-                  type='password'
+                  type="password"
                   value={passwordForm.currentPassword}
                   onChange={(event) => setPasswordForm((form) => ({ ...form, currentPassword: event.target.value }))}
-                  className='liquid-glass rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25'
+                  className="liquid-glass rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25"
                   placeholder={t.currentPassword}
                 />
                 <input
-                  type='password'
+                  type="password"
                   value={passwordForm.newPassword}
                   onChange={(event) => setPasswordForm((form) => ({ ...form, newPassword: event.target.value }))}
-                  className='liquid-glass rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25'
+                  className="liquid-glass rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25"
                   placeholder={t.newPassword}
                 />
                 <input
-                  type='password'
+                  type="password"
                   value={passwordForm.confirmPassword}
                   onChange={(event) => setPasswordForm((form) => ({ ...form, confirmPassword: event.target.value }))}
-                  className='liquid-glass rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25'
+                  className="liquid-glass rounded-2xl px-4 py-3 text-white outline-none focus:ring-1 focus:ring-white/25"
                   placeholder={t.confirmPassword}
                 />
               </div>
 
               <button
-                type='submit'
+                type="submit"
                 disabled={savingPassword}
-                className='mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 font-display text-sm font-semibold text-black transition-transform hover:scale-105 active:scale-95 disabled:opacity-70'
+                className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 font-display text-sm font-semibold text-black transition-transform hover:scale-105 active:scale-95 disabled:opacity-70"
               >
-                {savingPassword ? <Loader2 size={16} className='animate-spin' /> : <LockKeyhole size={16} />}
+                {savingPassword ? <Loader2 size={16} className="animate-spin" /> : <LockKeyhole size={16} />}
                 {t.updatePassword}
               </button>
             </form>
