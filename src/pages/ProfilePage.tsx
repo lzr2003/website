@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth, type UserPlatform } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import {
   ArrowLeft,
@@ -9,14 +9,12 @@ import {
   Gamepad2,
   Globe2,
   KeyRound,
-  Link2,
   Loader2,
   LockKeyhole,
   Mail,
   MapPin,
   Save,
   ShieldCheck,
-  Trash2,
   User as UserIcon,
 } from "lucide-react";
 
@@ -29,77 +27,66 @@ const platformOptions = [
   {
     id: "steam",
     name: "Steam",
-    hint: "Steam profile name or Steam ID",
     iconUrl: "https://cdn.simpleicons.org/steam/white",
     bindUrl: "https://steamcommunity.com/login/home/",
   },
   {
     id: "epic",
     name: "Epic Games",
-    hint: "Epic display name",
     iconUrl: "https://cdn.simpleicons.org/epicgames/white",
     bindUrl: "https://www.epicgames.com/account/connections",
   },
   {
     id: "ea",
     name: "EA",
-    hint: "EA ID",
     iconUrl: "https://cdn.simpleicons.org/ea/white",
     bindUrl: "https://myaccount.ea.com/cp-ui/connectaccounts/index",
   },
   {
     id: "xbox",
     name: "Xbox",
-    hint: "Xbox gamertag",
     iconUrl: "https://cdn.simpleicons.org/xbox/white",
     bindUrl: "https://account.xbox.com/Profile",
   },
   {
     id: "playstation",
     name: "PlayStation",
-    hint: "PSN online ID",
     iconUrl: "https://cdn.simpleicons.org/playstation/white",
     bindUrl: "https://www.playstation.com/acct/",
   },
   {
     id: "nintendo",
     name: "Nintendo",
-    hint: "Nintendo nickname",
     iconUrl: "https://cdn.simpleicons.org/nintendo/white",
     bindUrl: "https://accounts.nintendo.com/",
   },
   {
     id: "riot",
     name: "Riot Games",
-    hint: "Riot ID, e.g. name#tag",
     iconUrl: "https://cdn.simpleicons.org/riotgames/white",
     bindUrl: "https://account.riotgames.com/",
   },
   {
     id: "battlenet",
     name: "Battle.net",
-    hint: "BattleTag, e.g. name#1234",
     iconUrl: "https://cdn.simpleicons.org/battledotnet/white",
     bindUrl: "https://account.battle.net/connections",
   },
   {
     id: "ubisoft",
     name: "Ubisoft Connect",
-    hint: "Ubisoft username",
     iconUrl: "https://cdn.simpleicons.org/ubisoft/white",
     bindUrl: "https://account.ubisoft.com/account-information",
   },
   {
     id: "discord",
     name: "Discord",
-    hint: "Discord username",
     iconUrl: "https://cdn.simpleicons.org/discord/white",
     bindUrl: "https://discord.com/channels/@me",
   },
   {
     id: "twitch",
     name: "Twitch",
-    hint: "Twitch channel name",
     iconUrl: "https://cdn.simpleicons.org/twitch/white",
     bindUrl: "https://www.twitch.tv/settings/connections",
   },
@@ -108,27 +95,20 @@ const platformOptions = [
 const profileCopy = {
   en: {
     title: "Player Profile",
-    subtitle: "Manage your public profile, linked game accounts, and account security.",
+    subtitle: "Manage your public profile, game platform links, and account security.",
     backHome: "Back to Home",
     overview: "Account Overview",
     profile: "Public Profile",
-    platforms: "Connected Platforms",
+    platforms: "Game Platforms",
     security: "Security",
-    preferences: "Preferences",
     displayName: "Display name",
     avatar: "Avatar URL",
     bio: "Bio / status",
     location: "Location",
     website: "Website",
-    email: "Email",
     memberSince: "Member since",
     saveProfile: "Save profile",
-    accountName: "Account name",
-    profileUrl: "Profile URL",
-    save: "Save",
     connect: "Go bind",
-    openProfile: "Open profile",
-    unlink: "Unlink",
     currentPassword: "Current password",
     newPassword: "New password",
     confirmPassword: "Confirm password",
@@ -140,32 +120,25 @@ const profileCopy = {
     emailVerified: "Email login enabled",
     sessionProtected: "HttpOnly session cookie",
     privacyNote:
-      "Click Go bind to open the official platform account page, then save your account name or profile link here.",
-    notLinked: "Not linked",
+      "Platform cards only open the official binding or account page. No manual account fields are stored on Riversoft.",
+    platformHint: "Official account page",
   },
   zh: {
     title: "玩家资料",
-    subtitle: "管理公开资料、游戏平台绑定与账号安全。",
+    subtitle: "管理公开资料、游戏平台跳转绑定与账号安全。",
     backHome: "返回首页",
     overview: "账号概览",
     profile: "公开资料",
-    platforms: "游戏平台绑定",
+    platforms: "游戏平台",
     security: "账号安全",
-    preferences: "偏好设置",
     displayName: "用户名 / 显示名称",
     avatar: "头像 URL",
     bio: "个人简介 / 状态",
     location: "地区",
     website: "个人网站",
-    email: "邮箱",
     memberSince: "注册时间",
     saveProfile: "保存资料",
-    accountName: "平台账号名",
-    profileUrl: "主页链接",
-    save: "保存",
     connect: "前往绑定",
-    openProfile: "打开主页",
-    unlink: "解绑",
     currentPassword: "当前密码",
     newPassword: "新密码",
     confirmPassword: "确认新密码",
@@ -177,22 +150,16 @@ const profileCopy = {
     emailVerified: "邮箱登录已启用",
     sessionProtected: "HttpOnly 会话 Cookie",
     privacyNote:
-      "点击“前往绑定”会跳转到对应平台的官方账号页面，然后可在这里保存平台账号名或主页链接。",
-    notLinked: "未绑定",
+      "平台卡片只跳转到对应官方绑定或账号页面，不再手动填写或保存平台账号信息。",
+    platformHint: "官方账号页面",
   },
 } as const;
-
-type PlatformDraft = Record<string, { accountName: string; profileUrl: string }>;
 
 function formatDate(value?: string) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleDateString();
-}
-
-function getPlatform(platforms: UserPlatform[] | undefined, id: string) {
-  return platforms?.find((platform) => platform.platform === id);
 }
 
 function PlatformIcon({ src, name }: { src: string; name: string }) {
@@ -216,7 +183,6 @@ export function ProfilePage() {
     location: "",
     website: "",
   });
-  const [platformDrafts, setPlatformDrafts] = useState<PlatformDraft>({});
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -224,14 +190,8 @@ export function ProfilePage() {
   });
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [activePlatform, setActivePlatform] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-
-  const linkedCount = useMemo(
-    () => platformOptions.filter((platform) => getPlatform(user?.platforms, platform.id)).length,
-    [user?.platforms]
-  );
 
   useEffect(() => {
     document.title = `${t.title} | RIVERSOFT`;
@@ -253,16 +213,6 @@ export function ProfilePage() {
       location: user.location || "",
       website: user.website || "",
     });
-
-    const drafts: PlatformDraft = {};
-    platformOptions.forEach((platform) => {
-      const linked = getPlatform(user.platforms, platform.id);
-      drafts[platform.id] = {
-        accountName: linked?.accountName || "",
-        profileUrl: linked?.profileUrl || "",
-      };
-    });
-    setPlatformDrafts(drafts);
   }, [user]);
 
   const parseError = async (res: Response) => {
@@ -291,51 +241,6 @@ export function ProfilePage() {
       setError(err instanceof Error ? err.message : t.fallbackError);
     } finally {
       setSavingProfile(false);
-    }
-  };
-
-  const handlePlatformSave = async (platformId: string) => {
-    setError("");
-    setMessage("");
-    setActivePlatform(platformId);
-
-    try {
-      const draft = platformDrafts[platformId] || { accountName: "", profileUrl: "" };
-      const res = await fetch(`${API_BASE_URL}/profile/platforms/${platformId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(draft),
-      });
-
-      if (!res.ok) throw new Error(await parseError(res));
-      await refreshUser();
-      setMessage(t.saved);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.fallbackError);
-    } finally {
-      setActivePlatform(null);
-    }
-  };
-
-  const handlePlatformDelete = async (platformId: string) => {
-    setError("");
-    setMessage("");
-    setActivePlatform(platformId);
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/profile/platforms/${platformId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error(await parseError(res));
-      await refreshUser();
-      setMessage(t.saved);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.fallbackError);
-    } finally {
-      setActivePlatform(null);
     }
   };
 
@@ -435,7 +340,7 @@ export function ProfilePage() {
               </div>
               <div className="liquid-glass flex items-center gap-3 rounded-2xl px-4 py-3">
                 <Gamepad2 size={16} className="text-white/50" />
-                <span>{linkedCount}/{platformOptions.length} {t.platforms}</span>
+                <span>{platformOptions.length} {t.platforms}</span>
               </div>
               <div className="liquid-glass flex items-center gap-3 rounded-2xl px-4 py-3">
                 <BadgeCheck size={16} className="text-white/50" />
@@ -543,90 +448,28 @@ export function ProfilePage() {
               <p className="mb-5 text-sm text-white/55">{t.privacyNote}</p>
 
               <div className="grid gap-4 xl:grid-cols-2">
-                {platformOptions.map((platform) => {
-                  const linked = getPlatform(user.platforms, platform.id);
-                  const draft = platformDrafts[platform.id] || { accountName: "", profileUrl: "" };
-                  const isSaving = activePlatform === platform.id;
-
-                  return (
-                    <article key={platform.id} className="liquid-glass rounded-3xl p-4">
-                      <div className="mb-4 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <PlatformIcon src={platform.iconUrl} name={platform.name} />
-                          <div>
-                            <h3 className="font-display text-base font-medium text-white">{platform.name}</h3>
-                            <p className="text-xs text-white/45">{linked ? linked.accountName : t.notLinked}</p>
-                          </div>
+                {platformOptions.map((platform) => (
+                  <article key={platform.id} className="liquid-glass rounded-3xl p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <PlatformIcon src={platform.iconUrl} name={platform.name} />
+                        <div>
+                          <h3 className="font-display text-base font-medium text-white">{platform.name}</h3>
+                          <p className="text-xs text-white/45">{t.platformHint}</p>
                         </div>
-                        {linked ? <BadgeCheck size={17} className="text-white/70" /> : null}
                       </div>
-
-                      <div className="space-y-3">
-                        <input
-                          value={draft.accountName}
-                          onChange={(event) => setPlatformDrafts((drafts) => ({
-                            ...drafts,
-                            [platform.id]: { ...draft, accountName: event.target.value },
-                          }))}
-                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-white/20"
-                          placeholder={platform.hint}
-                        />
-                        <input
-                          value={draft.profileUrl}
-                          onChange={(event) => setPlatformDrafts((drafts) => ({
-                            ...drafts,
-                            [platform.id]: { ...draft, profileUrl: event.target.value },
-                          }))}
-                          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-white/20"
-                          placeholder={t.profileUrl}
-                        />
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <a
-                          href={platform.bindUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-                        >
-                          <ExternalLink size={14} />
-                          {t.connect}
-                        </a>
-                        <button
-                          type="button"
-                          onClick={() => handlePlatformSave(platform.id)}
-                          disabled={isSaving}
-                          className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-black transition-transform hover:scale-105 active:scale-95 disabled:opacity-70"
-                        >
-                          {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
-                          {t.save}
-                        </button>
-                        {linked?.profileUrl ? (
-                          <a
-                            href={linked.profileUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/75 transition-colors hover:bg-white/10 hover:text-white"
-                          >
-                            <ExternalLink size={14} />
-                            {t.openProfile}
-                          </a>
-                        ) : null}
-                        {linked ? (
-                          <button
-                            type="button"
-                            onClick={() => handlePlatformDelete(platform.id)}
-                            disabled={isSaving}
-                            className="inline-flex h-10 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/75 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-70"
-                          >
-                            <Trash2 size={14} />
-                            {t.unlink}
-                          </button>
-                        ) : null}
-                      </div>
-                    </article>
-                  );
-                })}
+                      <a
+                        href={platform.bindUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-white/15 px-4 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                      >
+                        <ExternalLink size={14} />
+                        {t.connect}
+                      </a>
+                    </div>
+                  </article>
+                ))}
               </div>
             </section>
 
